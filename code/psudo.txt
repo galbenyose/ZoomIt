@@ -1,0 +1,56 @@
+יוצרת מחלקה לשרת
+בדיוק מה שהמסד עושה בלקוח
+רק בשרת
+
+שכל משהו בלקוח מבקש משרת את הנתונים והאישור במקום לבדוק לבד
+
+
+
+key SEPARATOR value
+
+key: value
+key: value
+
+username = list[0]
+password = list[1]
+
+
+username = parameters['USERNAME']
+
+
+מכניסה פרטים של משמתש
+שולחת לו הודעה לשיחה
+מאשר
+פותחים
+לא מאשר
+בוכים
+
+
+פותחת שרת ברקע
+ואז הלקוח שהשרת שלו פועל
+הוא כאילו השרת בשיחה
+
+
+
+
+|1|email|username|
+|1|EMAIL!!!email|USERNAME!!!username|
+
+REQUEST = 0
+server_response['RESULT'] == 'true'
+
+server_response[1] == 'true'
+
+milon = {
+    "EMAIL": 'masheu@gmail.com',
+    "USERNAME": 'vebnasmi'
+}
+
+
+
+שמות תמיד אותיות גדולות
+FIRST_NAME
+USERNAME
+EMAIL
+PASSWORD
+IP
