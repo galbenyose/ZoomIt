@@ -73,13 +73,13 @@ def home_page_design():
 def information_button():
 #the design of tha information page
 #לתקן
-   root=Tk()
+   root = Toplevel()
    root.title("ZOOM IT")
    root.iconbitmap(r"images\logo.png.png")
    root.geometry("450x550")
-   image=Image.open("images\Zoom_it.png")
-   bg = PhotoImage(image)
-   label1 = Label( root, image = bg)
+   image= Image.open(r"images\Zoom_it.png")
+   bg = ImageTk.PhotoImage(image)
+   label1 = Button(root, image=bg)
    label1.pack()
    def Exit_page():
         root.destroy()
