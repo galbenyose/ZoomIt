@@ -98,11 +98,6 @@ class ZoomItDB:
         self._cur.execute(query_update,(mail,))
         self._conn.commit()
     
-    def update_state(self,userstate_new,table_name,mail):
-        self._open()
-        query_update =f"UPDATE {table_name} SET userstate= {userstate_new} Where mail=%s "
-        self._cur.execute(query_update,(mail,))
-        self._conn.commit()
         
     
     def update_conection_state(self,con_num,table_name,username):
@@ -167,10 +162,10 @@ class ZoomItDB:
         print(client_ip)
         return client_ip
     
-    def updat_client_id(self, table_name, username, id_user):
+    def updat_client_ip(self, table_name, username, ip_user):
         self._open()
-        id=self.id_Encryption(id_user)
-        query_update =f"UPDATE {table_name} SET client_id= {id} WHERE username=%s "
+        ip=ip_user
+        query_update =f"UPDATE {table_name} SET client_ip= {id} WHERE username=%s "
         self._cur.execute(query_update, (username,))
         self._conn.commit()
         

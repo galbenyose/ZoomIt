@@ -47,20 +47,20 @@ class Facedatabase:
             self._close()
             return inserted
     
-    def print_lst_of_converstion(self,table_name,interwere_name,email):
+    def print_lst_of_converstion(self,table_name,interviewere_name,email):
         self._open()
         query_lst_converstion=f"SELECT * FROM {table_name} WHERE interwere_name=%s AND mail=%s"
-        self._cur.execute(query_lst_converstion,(interwere_name,email,))
+        self._cur.execute(query_lst_converstion,(interviewere_name,email,))
         lst_converstion=self._cur.fetchone()
         #לחזור לבדוק
         #להרכיב לולאה שמדפיסה הכל כל תא במילון שווה לשם במסד של הערך
         # מחזיר את המילון לטפל בפעולת הצגת שיחה
         return lst_converstion
     
-    def lst_conversition_of_specific_interwerer(self,table_name,interwed_name,interwere_name):
+    def lst_conversition_of_specific_interviewee(self,table_name,interviewer_name,interviewee_name):
         self._open()
         query_lst_converstion=f"SELECT * FROM {table_name} WHERE interwere_name=%s AND interwed_name=%s"
-        self._cur.execute(query_lst_converstion,(interwere_name,interwed_name,))
+        self._cur.execute(query_lst_converstion,(interviewee_name,interviewer_name,))
         lst_converstion=self._cur.fetchone()
         return lst_converstion
 

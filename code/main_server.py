@@ -4,6 +4,7 @@ import base64
 import threading
 from class_Face import *
 from Face_data_base import *
+import rsa
 
 #מבנה של הודעה 
 #את כל ערך הנשלח לשרת מקיפות |
@@ -43,6 +44,8 @@ SEPARATOR = b'!!!'
 MESSAGE_END = b'###'
 FALSE = 'false'
 TRUE = 'true'
+RSA_PUBLIC_KEY = 'RSA_PUBLIC_KEY'
+RSA_PRIVATE_KEY = 'RSA_PRIVATE_KEY'
 
 class Server:
     CREAT_CONVERSATION='1'
@@ -121,7 +124,7 @@ class Server:
                 })
             client.send(message)
 
-    def change_password(self,client: socket.socket,data):
+    def change_password(self,client: socket.socket,data, addr):
         db=ZoomItDB()
         passw=data["PASSWORD"]
         table_name="users_u"
@@ -130,7 +133,8 @@ class Server:
         message= self.create_message(self.CHANGE_PASSWORD,{
             "RESULT":TRUE
         })
-        client.send(message)
+        encrypted = self._prepare_message(message, addr)
+        client.send(encrypted)
 
     
     def dict_face_adding(self,data):
@@ -209,9 +213,25 @@ class Server:
                 }
             )            
             client.send(server_response) 
+            
+    def do_handshake(self, client: socket.socket, data, addr: str):
+        client_public_key = rsa.PublicKey(int(data['N']), int(data['E']))
+        self.clients[addr][RSA_PUBLIC_KEY] = client_public_key
+        server_public_key, private_key = rsa.newkeys(1024)
+        self.clients[addr][RSA_PRIVATE_KEY] = private_key
+        message = self.create_message(0, {
+            "N": str(server_public_key.n),
+            "E": str(server_public_key.e)
+        })
+        client.send(message)
+    
+    def _prepare_message(self, message, addr):
+        return rsa.encrypt(message, self.clients[addr][RSA_PUBLIC_KEY])
+
+    def _decrypt_message(self, encrypted, addr):
+        return rsa.decrypt(encrypted, self.clients[addr][RSA_PRIVATE_KEY])
         
-        
-    def handle_client(self, client):
+    def handle_client(self, client, addr):
         """
         Takes a client and sends him to his request
         """
@@ -227,9 +247,14 @@ class Server:
             self.THOUCHINGTHEFOREHEAD: self.dict_face_adding,
             self.MOUTHCLENCHED: self.dict_face_adding
         }
-        parameters = self.extract_parameters(data)
+        if not self.clients.get(RSA_PUBLIC_KEY, False):
+            parameters = self.extract_parameters(data)
+            self.do_handshake(client, parameters, addr[0])
+            return
+        decrypted = self._decrypt_message(data, addr[0])
+        parameters = self.extract_parameters(decrypted)
         num_of_request=parameters['REQUEST']
-        functions[num_of_request](client, parameters)
+        functions[num_of_request](client, parameters, addr[0])
         client.close()
     
         
@@ -244,7 +269,7 @@ class Server:
         threads = []
         while True:
             client, addr = server.accept()
-            thread = threading.Thread(target=self.handle_client, args=(client,))
+            thread = threading.Thread(target=self.handle_client, args=(client, addr))
             threads.append(thread)
             thread.start()
             

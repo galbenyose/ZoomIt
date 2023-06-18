@@ -88,7 +88,7 @@ def information_button():
    root.mainloop()
 
 def sign_up():
-#the design of the si+gn up page where the customer fills the information about himeself 
+#the design of the sign up page where the customer fills the information about himeself 
     global root
     root=Tk()
     root.title("ZOOM IT")

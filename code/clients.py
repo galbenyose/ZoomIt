@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import socket
 import cv2
 import numpy as np
+import rsa
 from class_Face import *
 
 SEPARATOR = b'!!!'
@@ -55,7 +56,7 @@ class Client:
 class CallClient(Client):
     # Constants for audio streaming
     global CHUNK_SIZE 
-    CHUNK_SIZE =1024
+    CHUNK_SIZE = 2048
     global FORMAT
     FORMAT = pyaudio.paInt16
     global CHANNELS 
@@ -99,7 +100,7 @@ class CallClient(Client):
     def receive_frames(self):
         global video_frame
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((self.ip, self.port))
+        sock.bind(("0.0.0.0", self.port))
         while True:
            data = b''
            while len(data) < 921600:  # Adjust this value based on your frame size
@@ -135,7 +136,7 @@ class CallClient(Client):
     # Function to receive audio from the other participant
     def receive_audio(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((self.ip, self.port+1))
+        sock.bind(("0.0.0.0", self.port+1))
         while True:
            data, _ = sock.recvfrom(CHUNK_SIZE)
            self.audio_stream_output.write(data)
@@ -191,8 +192,17 @@ class User(Client):
     def __init__(self, ip: str, port: int) -> None:
         super().__init__(ip, port)
             
-            
-            
+    def do_handshake(self):
+        public_key, private_key = rsa.newkeys(1024)
+        self.private_key = private_key
+        message = self.create_message(0, {
+            'N': str(public_key.n),
+            'E': str(public_key.e)
+        })
+        data = self.send_and_recv(message)
+        server_public_key = rsa.PublicKey(int(data['N']), int(data['E']))
+        self.public_key = server_public_key
+    
     def adding_data_to_face_database(self):
         pass
         
@@ -247,6 +257,12 @@ class User(Client):
         if server_response["RESULT"]=='True':
             return True
         return False
+    
+    def _prepare_message(self, message):
+        return rsa.encrypt(message, self.public_key)
+    
+    def _decrypt_message(self, encrypted):
+        return rsa.decrypt(encrypted, self.private_key)
         
     def creatconvesation(self,email: str,username: str):
         massage=self.create_message(self.CREATCONVERSATION, {

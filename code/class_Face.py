@@ -112,7 +112,7 @@ class Face:
             
     
     def mouth_clenched(self):
-    # קיווץ הפה לכיוון אחד חוסר שיבעות רצון
+    # כיווץ הפה לכיוון אחד חוסר שיבעות רצון
         predictor = dlib.shape_predictor('shape_model/shape_predictor_68_face_landmarks.dat.bz2')
         image_thouching_nose_check=cv2.imread(self.image)
         gray = cv2.cvtColor(image_thouching_nose_check, cv2.COLOR_BGR2GRAY)
