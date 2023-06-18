@@ -50,7 +50,7 @@ class Client:
             data = sock.recv(1024)
             while not data.endswith(b'###'):
                 data += sock.recv(1024)
-        return self.extract_parameters(data)
+        return data
     
 
 class CallClient(Client):
@@ -213,7 +213,9 @@ class User(Client):
             'USERNAME': username,
             'PASSWORD': password
         })
-        server_response = self.send_and_recv(message)
+        encrypted = self._prepare_message(message)
+        encrypted_data = self.send_and_recv(encrypted)
+        server_response = self._decrypt_message(encrypted_data)
         # do what you want with response    
         # |4|True|
         if server_response['RESULT'] == TRUE:
@@ -241,7 +243,9 @@ class User(Client):
                 "IP":ip
             }
         )
-        server_response = self.send_and_recv(message)
+        encrypted = self._prepare_message(message)
+        encrypted_data = self.send_and_recv(encrypted)
+        server_response = self._decrypt_message(encrypted_data)
         #|3|True|-return true
         #|3|False|-return false to say that the email or the username are exist
         return server_response
@@ -252,7 +256,9 @@ class User(Client):
             "table_name":table_name,
             "EMAIL":email
             })    
-        server_response = self.send_and_recv(message)
+        encrypted = self._prepare_message(message)
+        encrypted_data = self.send_and_recv(encrypted)
+        server_response = self._decrypt_message(encrypted_data)
         #|2|True|-to say that the password update
         if server_response["RESULT"]=='True':
             return True
@@ -262,14 +268,16 @@ class User(Client):
         return rsa.encrypt(message, self.public_key)
     
     def _decrypt_message(self, encrypted):
-        return rsa.decrypt(encrypted, self.private_key)
+        return self.extract_parameters(rsa.decrypt(encrypted, self.private_key))
         
     def creatconvesation(self,email: str,username: str):
-        massage=self.create_message(self.CREATCONVERSATION, {
+        message=self.create_message(self.CREATCONVERSATION, {
             'EMAIL': email,
             'USERNAME': username
         })
-        server_response = self.send_and_recv(massage)
+        encrypted = self._prepare_message(message)
+        encrypted_data = self.send_and_recv(encrypted)
+        server_response = self._decrypt_message(encrypted_data)
         if server_response["RESULT"]==TRUE: # RESULT = 1, IP = 3  username = 2
             return server_response
         else:

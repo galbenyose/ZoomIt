@@ -97,7 +97,7 @@ class Server:
             parameters[key] = value
         return parameters
 
-    def creatconversation(self,client: socket.socket,data):
+    def creatconversation(self,client: socket.socket,data,addr):
         username_interviewee=data["USERNAME"]
         email = data['EMAIL']
         db=ZoomItDB()
@@ -122,7 +122,8 @@ class Server:
                 message = self.create_message(self.DENYING_ENTRY_TO_CALL, {
                     'RESULT': FALSE,
                 })
-            client.send(message)
+            encrypted_message=self._prepare_message(message,addr)
+            client.send(encrypted_message)
 
     def change_password(self,client: socket.socket,data, addr):
         db=ZoomItDB()
@@ -133,8 +134,8 @@ class Server:
         message= self.create_message(self.CHANGE_PASSWORD,{
             "RESULT":TRUE
         })
-        encrypted = self._prepare_message(message, addr)
-        client.send(encrypted)
+        encrypted_message = self._prepare_message(message, addr)
+        client.send(encrypted_message)
 
     
     def dict_face_adding(self,data):
@@ -155,7 +156,7 @@ class Server:
                     T_ear=self.dict_face["ear"],T_forehead=self.dict_face["forehead"],
                     C_mouth=self.dict_face["clenched"],interviewer_name="",interviewee_name="",mail_interviewer="")
     
-    def signup(self,client: socket.socket,data):
+    def signup(self,client: socket.socket,data,addr):
         db=ZoomItDB()
         fname=data["FIRST_NAME"]
         lname=data["LAST_NAME"]
@@ -188,10 +189,11 @@ class Server:
                     "REASON": 'username'
                 }
             )
-        client.send(server_response)
+        encrypted_message = self._prepare_message(server_response, addr)
+        client.send(encrypted_message)
             
     
-    def login(self, client: socket.socket, data):
+    def login(self, client: socket.socket, data,addr):
         db=ZoomItDB()
         password_u=data["PASSWORD"] 
         username_u=data["USERNAME"]
@@ -205,14 +207,16 @@ class Server:
                 "FIRST_NAME":user_first_name
             }
             )
-            client.send(server_response)
+            encrypted_message = self._prepare_message(server_response, addr)
+            client.send(encrypted_message)
         else:
             server_response=self.create_message(
                 self.LOGIN_REQUEST,{
                     "RESULT":FALSE
                 }
-            )            
-            client.send(server_response) 
+            )
+            encrypted_message = self._prepare_message(server_response, addr)            
+            client.send(encrypted_message) 
             
     def do_handshake(self, client: socket.socket, data, addr: str):
         client_public_key = rsa.PublicKey(int(data['N']), int(data['E']))
