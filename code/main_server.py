@@ -194,6 +194,7 @@ class Server:
             
     
     def login(self, client: socket.socket, data,addr):
+        
         db=ZoomItDB()
         password_u=data["PASSWORD"] 
         username_u=data["USERNAME"]
@@ -219,13 +220,20 @@ class Server:
             client.send(encrypted_message) 
             
     def do_handshake(self, client: socket.socket, data, addr: str):
-        client_public_key = rsa.PublicKey(int(data['N']), int(data['E']))
+       
+        client_public_key = rsa.PublicKey(int(data['n']), int(data['e']))
+       
+        self.clients.setdefault(addr, {})
+        print(self.clients)
         self.clients[addr][RSA_PUBLIC_KEY] = client_public_key
+        print(self.clients)
+        print(addr)
         server_public_key, private_key = rsa.newkeys(1024)
         self.clients[addr][RSA_PRIVATE_KEY] = private_key
+        print(self.clients)
         message = self.create_message(0, {
-            "N": str(server_public_key.n),
-            "E": str(server_public_key.e)
+            "n": str(server_public_key.n),
+            "e": str(server_public_key.e)
         })
         client.send(message)
     
@@ -255,6 +263,7 @@ class Server:
             parameters = self.extract_parameters(data)
             self.do_handshake(client, parameters, addr[0])
             return
+        print("1233456")
         decrypted = self._decrypt_message(data, addr[0])
         parameters = self.extract_parameters(decrypted)
         num_of_request=parameters['REQUEST']

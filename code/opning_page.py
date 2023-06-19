@@ -5,7 +5,7 @@ from interviewee_page import *
 from clients import *
 
 
-client = User('192.168.103.208', 1337)
+client = User('192.168.68.74', 1337)
 
 
 def home_page_design():
@@ -42,7 +42,8 @@ def home_page_design():
         password_u=user_password.get()
         Delete()
         #ריצה על הטבלה והכנסת משתמש
-        response = client.login(username_u, password_u)
+        print(password_u)
+        response = client.login(username_u,password_u)
         print("--------1")
         if response==False:
             error_masage= Label(fram_sign_up,text="one or two of your login details are incorrect ")

@@ -1,5 +1,6 @@
 import cv2
 import dlib
+import os
 
 class Face:
     def __init__(self,image):
@@ -9,8 +10,7 @@ class Face:
     #אמירת שקר לחץ
     # כשאנחנו בלחץ נאגר לנו דם באף ונוצר לחץ במקום זה מה שיוצר את הרצון לגעת באף
     def Thouching_the_nose(self):
-        
-        predictor = dlib.shape_predictor('shape_model/shape_predictor_68_face_landmarks.dat.bz2')
+        predictor = dlib.shape_predictor('code/shape_model/shape_predictor_68_face_landmarks.dat')
         image_thouching_nose_check=cv2.imread(self.image)
         gray = cv2.cvtColor(image_thouching_nose_check, cv2.COLOR_BGR2GRAY)
         detector = dlib.get_frontal_face_detector()
@@ -112,7 +112,7 @@ class Face:
             
     
     def mouth_clenched(self):
-    # כיווץ הפה לכיוון אחד חוסר שיבעות רצון
+    # קיווץ הפה לכיוון אחד חוסר שיבעות רצון
         predictor = dlib.shape_predictor('shape_model/shape_predictor_68_face_landmarks.dat.bz2')
         image_thouching_nose_check=cv2.imread(self.image)
         gray = cv2.cvtColor(image_thouching_nose_check, cv2.COLOR_BGR2GRAY)
@@ -131,3 +131,6 @@ class Face:
             else:
                 print("not pursing the lips")
                 return False
+            
+face=Face("images\Screenshot 2023-06-19 200442.png")
+print(face.Thouching_the_nose())

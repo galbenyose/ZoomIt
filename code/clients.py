@@ -189,19 +189,29 @@ class User(Client):
     SIGN_UP_REQUEST = '3'
     LOGIN_REQUEST = '4'
     
+    
+    
     def __init__(self, ip: str, port: int) -> None:
         super().__init__(ip, port)
+        self.do_handshake()
+        
             
     def do_handshake(self):
         public_key, private_key = rsa.newkeys(1024)
         self.private_key = private_key
         message = self.create_message(0, {
-            'N': str(public_key.n),
-            'E': str(public_key.e)
+            'n': str(public_key.n),
+            'e': str(public_key.e)
         })
         data = self.send_and_recv(message)
-        server_public_key = rsa.PublicKey(int(data['N']), int(data['E']))
+        print(data)
+        d_message=rsa.decrypt(data, self.private_key)
+    
+        server_response = self.extract_parameters(d_message)
+        print(server_response)
+        server_public_key = rsa.PublicKey(int(server_response["n"]), int(server_response["e"]))
         self.public_key = server_public_key
+        
     
     def adding_data_to_face_database(self):
         pass
@@ -213,12 +223,16 @@ class User(Client):
             'USERNAME': username,
             'PASSWORD': password
         })
+        print("1234")
+        print(message)
         encrypted = self._prepare_message(message)
         encrypted_data = self.send_and_recv(encrypted)
+        print("-----")
         server_response = self._decrypt_message(encrypted_data)
         # do what you want with response    
         # |4|True|
         if server_response['RESULT'] == TRUE:
+            print("----1")
             return server_response
         return False
     

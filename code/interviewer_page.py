@@ -5,7 +5,7 @@ import socket
 from clients import *
 import threading
 
-user=User('192.168.103.208',1337)
+user=User('192.168.68.74',1337)
 
 def interviewed_design_page(name):
     global root
