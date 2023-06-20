@@ -2,6 +2,7 @@ import pyaudio
 import base64
 from PIL import Image, ImageTk
 import socket
+import time
 import cv2
 import numpy as np
 import rsa
@@ -56,7 +57,7 @@ class Client:
 class CallClient(Client):
     # Constants for audio streaming
     global CHUNK_SIZE 
-    CHUNK_SIZE = 2048
+    CHUNK_SIZE = 65527 
     global FORMAT
     FORMAT = pyaudio.paInt16
     global CHANNELS 
@@ -100,15 +101,16 @@ class CallClient(Client):
     def receive_frames(self):
         global video_frame
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF, 921600)
         sock.bind(("0.0.0.0", self.port))
         while True:
            data = b''
            while len(data) < 921600:  # Adjust this value based on your frame size
-               packet, _ = sock.recvfrom(4096)
+               packet, _ = sock.recvfrom(CHUNK_SIZE)
                if not packet:
                    break
                data += packet
-           video_frame = np.frombuffer(data[:921600], dtype=np.uint8).reshape((480, 640, 3))
+           video_frame = np.frombuffer(data[:921600], dtype=np.uint8).reshape((640, 480, 3))
            video_frame=cv2.flip(video_frame,1)
            return video_frame
         #cv2.imshow('Video Conference', video_frame)
@@ -122,15 +124,17 @@ class CallClient(Client):
         
     def send_frames(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #משנה את הגודל המקסימלי שאפשר לשלוח בפרוטוקול
+        sock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF, 921600)
         while True:
             ret, video_frame = self.CAP.read()
+            video_frame=cv2.resize(video_frame,(640,480))
             if not ret:
                break
-            data = video_frame.tobytes()
-            data_length = len(data)
-            chunks = data_length // CHUNK_SIZE
-            for i in range(chunks):
-                sock.sendto(data[i*CHUNK_SIZE: (i+1) * CHUNK_SIZE], (self.ip, self.port))
+            data: bytes = video_frame.tobytes()
+            for i in range(0, len(data), CHUNK_SIZE):
+                sock.sendto(data[i:i+CHUNK_SIZE], (self.ip, self.port))
+                time.sleep(0.1)
         sock.close()
     
     # Function to receive audio from the other participant

@@ -35,7 +35,7 @@ def home_page_design():
     user_password.grid(row=10,column=1)
     
     def Delete():
-        username.delete(0,END)
+        username.delete(0,END) 
         user_password.delete(0,END)
         
     def login():
