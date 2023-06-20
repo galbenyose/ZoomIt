@@ -1,7 +1,8 @@
 from tkinter import *
+from tkinter import messagebox
 from users_data_base import *
-from interviewer_page import *
-from interviewee_page import *
+import interviewer_page
+import interviewee_page
 from clients import *
 
 
@@ -54,13 +55,13 @@ def home_page_design():
         elif int(response['TYPE'])==1:
             root.destroy()
             #להכניס ip עדכני
-            while interviewed_design_page!=True:
-              interviewed_design_page(response['FIRST_NAME'])
+            while interviewer_page.interviewed_design_page!=True:
+              interviewer_page.interviewed_design_page(response['FIRST_NAME'], client)
             home_page_design()
         else:
             root.destroy()
-            while interviewee_design_page!=True:
-               interviewee_design_page(response['FIRST_NAME'], client.ip)
+            while interviewee_page.interviewee_design_page!=True:
+               interviewee_page.interviewee_design_page(response['FIRST_NAME'], client.ip)
             home_page_design()
             
     delete_key=Button(fram_sign_up, text="Delete", command= Delete)

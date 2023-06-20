@@ -195,6 +195,7 @@ class User(Client):
         super().__init__(ip, port)
         self.do_handshake()
         
+        
             
     def do_handshake(self):
         public_key, private_key = rsa.newkeys(1024)
@@ -205,9 +206,7 @@ class User(Client):
         })
         data = self.send_and_recv(message)
         print(data)
-        d_message=rsa.decrypt(data, self.private_key)
-    
-        server_response = self.extract_parameters(d_message)
+        server_response = self.extract_parameters(data)
         print(server_response)
         server_public_key = rsa.PublicKey(int(server_response["n"]), int(server_response["e"]))
         self.public_key = server_public_key
@@ -279,9 +278,10 @@ class User(Client):
         return False
     
     def _prepare_message(self, message):
-        return rsa.encrypt(message, self.public_key)
+        return rsa.encrypt(message, self.public_key) + b"###"
     
     def _decrypt_message(self, encrypted):
+        encrypted = encrypted[:-len(MESSAGE_END)]
         return self.extract_parameters(rsa.decrypt(encrypted, self.private_key))
         
     def creatconvesation(self,email: str,username: str):

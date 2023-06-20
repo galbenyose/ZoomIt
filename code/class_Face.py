@@ -132,5 +132,3 @@ class Face:
                 print("not pursing the lips")
                 return False
             
-face=Face("images\Screenshot 2023-06-19 200442.png")
-print(face.Thouching_the_nose())

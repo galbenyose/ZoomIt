@@ -5,9 +5,8 @@ import socket
 from clients import *
 import threading
 
-user=User('192.168.68.74',1337)
 
-def interviewed_design_page(name):
+def interviewed_design_page(name, client):
     global root
     root=Tk()
     root.title("ZOOM IT")
@@ -17,10 +16,11 @@ def interviewed_design_page(name):
     label1=Label(root,text="Hello "+ name,fg="black",bg="#F4F6F7",font=("verdana",20)).place(x=500,y=120)
     updat_password=Button(root,text="update password",font=("verdana",25),command=update_passw)
     updat_password.place(x=1150,y=300)
-    creat_conversation=Button(root,text="create conversation",font=("verdana",25),command=create_conversations )
+    
+    def button_create_conversation():
+        create_conversations(client)
+    creat_conversation=Button(root,text="create conversation",font=("verdana",25), command=button_create_conversation )
     creat_conversation.place(x=1150,y=400)
-    conected_interviewer=Button(root,text="create conversation",font=("verdana",25),command=create_conversations )
-    conected_interviewer.place(x=1150,y=500)
     call_lists=Button(root, text= "lists of calls information",font=("verdana",25), command=list_of_connected_people)
     call_lists.place(x=1100,y=600)
     def Exit_page():
@@ -32,7 +32,7 @@ def interviewed_design_page(name):
     root.mainloop()
 
 
-def list_of_connected_people():
+def list_of_connected_people():  # TODO fix db usage in client
     db=ZoomItDB()
     db._open()
     lst_connect_user_name=db.conected_people_username('users_u')
@@ -49,6 +49,7 @@ def list_of_connected_people():
         list_text_username.insert(END,con+ ' \n')
     for con in lst_connect_firstname:
         list_text_first_name.insert(END,con+' \n')
+
     def Exit():
         fram.destroy()
     exit_button= Button(fram,text='Exit',command=Exit)
@@ -57,7 +58,7 @@ def list_of_connected_people():
 def list_calls():
     pass
 
-def create_conversations():
+def create_conversations(user: User):
     fram= LabelFrame(root,text="creat conversation",padx=50,pady=100)
     fram.grid(padx=30,pady=300)
     email_u= Label(fram,text="write your mail",font=("verdana",15))

@@ -1,4 +1,5 @@
 import socket
+import pprint
 from users_data_base import *
 import base64
 import threading
@@ -40,6 +41,8 @@ import rsa
 #     elif db.mouth_clenched==True:
 #         server_socket.sendto("|8|"+ip_interviewd)
 
+pp = pprint.PrettyPrinter(indent=4)
+
 SEPARATOR = b'!!!'
 MESSAGE_END = b'###'
 FALSE = 'false'
@@ -63,7 +66,7 @@ class Server:
     CONVERSATION_PORT = 1357
     def __init__(self, port) -> None:
         self.port = port
-        self.clients = {}
+        self.clients = dict()
         self.dict_face={"nose":0,"mouth_t":0,"clenched":0,"ear":0,"forehead":0}
         # clients[IP] => socket
         
@@ -194,10 +197,10 @@ class Server:
             
     
     def login(self, client: socket.socket, data,addr):
-        
         db=ZoomItDB()
         password_u=data["PASSWORD"] 
         username_u=data["USERNAME"]
+        print(password_u, username_u)
         if db.sign_in_check(password_u,username_u,"users_u")==True:
             db.update_conection_state(1,'users_u',username_u)
             user_first_name=db.get_user_name('users_u',username_u)
@@ -212,25 +215,18 @@ class Server:
             client.send(encrypted_message)
         else:
             server_response=self.create_message(
-                self.LOGIN_REQUEST,{
-                    "RESULT":FALSE
+                self.LOGIN_REQUEST, {
+                    "RESULT": FALSE
                 }
             )
             encrypted_message = self._prepare_message(server_response, addr)            
             client.send(encrypted_message) 
             
     def do_handshake(self, client: socket.socket, data, addr: str):
-       
         client_public_key = rsa.PublicKey(int(data['n']), int(data['e']))
-       
-        self.clients.setdefault(addr, {})
-        print(self.clients)
         self.clients[addr][RSA_PUBLIC_KEY] = client_public_key
-        print(self.clients)
-        print(addr)
         server_public_key, private_key = rsa.newkeys(1024)
         self.clients[addr][RSA_PRIVATE_KEY] = private_key
-        print(self.clients)
         message = self.create_message(0, {
             "n": str(server_public_key.n),
             "e": str(server_public_key.e)
@@ -238,15 +234,17 @@ class Server:
         client.send(message)
     
     def _prepare_message(self, message, addr):
-        return rsa.encrypt(message, self.clients[addr][RSA_PUBLIC_KEY])
+        return rsa.encrypt(message, self.clients[addr][RSA_PUBLIC_KEY]) + b"###"
 
     def _decrypt_message(self, encrypted, addr):
+        encrypted = encrypted[:-len(MESSAGE_END)]
         return rsa.decrypt(encrypted, self.clients[addr][RSA_PRIVATE_KEY])
         
     def handle_client(self, client, addr):
         """
         Takes a client and sends him to his request
         """
+        print("--------------------------------------")
         data = self.get_all_data(client)
         functions = {
             self.CREAT_CONVERSATION: self.creatconversation,
@@ -259,15 +257,21 @@ class Server:
             self.THOUCHINGTHEFOREHEAD: self.dict_face_adding,
             self.MOUTHCLENCHED: self.dict_face_adding
         }
-        if not self.clients.get(RSA_PUBLIC_KEY, False):
+        addr = addr[0]
+        pp.pprint(self.clients)
+        if not (addr in self.clients):
+            self.clients[addr] = dict()
+        if not self.clients[addr].get(RSA_PUBLIC_KEY):
             parameters = self.extract_parameters(data)
-            self.do_handshake(client, parameters, addr[0])
+            self.do_handshake(client, parameters, addr)
             return
-        print("1233456")
-        decrypted = self._decrypt_message(data, addr[0])
+        print(addr)
+        print("THE SERVER REACEHD THE DECRYPTION")
+        decrypted = self._decrypt_message(data, addr)
+        print(decrypted)
         parameters = self.extract_parameters(decrypted)
         num_of_request=parameters['REQUEST']
-        functions[num_of_request](client, parameters, addr[0])
+        functions[num_of_request](client, parameters, addr)
         client.close()
     
         
