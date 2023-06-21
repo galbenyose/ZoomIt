@@ -106,13 +106,13 @@ class Server:
         db=ZoomItDB()
         ip_interviewee=db.get_user_ip("users_u",username_interviewee)
         user = db.get_user_by_email(email)
-        interviewer_ip=db.get_user_ip("users_s","siv")
+        interviewer_ip=db.get_user_ip("users_u","siv")
         #בקשה ליצירת שיחה
         with socket.create_connection((ip_interviewee, self.CONVERSATION_PORT)) as sock:
             call_request = self.create_message(self.CALL_ENTRY_CONFIRMATION, {
                 'FIRST_NAME': user['name_u'],
                 'IP': addr,
-                "IP_INTERVIEWER": interviewer_ip
+                "IP_INTERVIERE": interviewer_ip
             })
             sock.send(call_request)
             data = self.get_all_data(sock)
