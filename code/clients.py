@@ -104,39 +104,38 @@ class CallClient(Client):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF, 921600)
         sock.bind(("0.0.0.0", self.port))
-        while True:
-           data = b''
-           while len(data) < 921600:  # Adjust this value based on your frame size
-               packet, _ = sock.recvfrom(CHUNK_SIZE)
-               if not packet:
-                   break
-               data += packet
-           video_frame = np.frombuffer(data[:921600], dtype=np.uint8).reshape((640, 480, 3))
-           video_frame=cv2.flip(video_frame,1)
-           return video_frame
+        data = b''
+        while len(data) < 921600:  # Adjust this value based on your frame size
+            packet, _ = sock.recvfrom(CHUNK_SIZE)
+            if not packet:
+                break
+            data += packet
+        filename = 'temp.jpg'
+        with open(filename, 'wb') as f:
+            f.write(data)
+        sock.close()
+        return filename
         #cv2.imshow('Video Conference', video_frame)
         #label = Label(root, image=video_frame)
         #label.pack()
         
-           if cv2.waitKey(1) == ord('q'):
-              break
-        conn.close()
-        sock.close()
-        
     def send_frames(self):
-        print(self.ip, self.port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         #משנה את הגודל המקסימלי שאפשר לשלוח בפרוטוקול
-        sock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF, 921600)
         while True:
             ret, video_frame = self.CAP.read()
-            video_frame = imutils.resize(video_frame, width=512)
+            video_frame = cv2.resize(video_frame, width=512)
             if not ret:
                break
-            data: bytes = video_frame.tobytes()
-            for i in range(0, len(data), CHUNK_SIZE):
-                sock.sendto(data[i:i+CHUNK_SIZE], (self.ip, self.port))
+            filename = 'temp.jpg'
+            cv2.imwrite(filename, video_frame)
+            with open(filename, video_frame) as f:
+                sock.sendto(f.read(), (self.ip,1337))
                 time.sleep(0.1)
+            #data: bytes = video_frame.tobytes()
+            #for i in range(0, len(data), CHUNK_SIZE):
+                #sock.sendto(data[i:i+CHUNK_SIZE], (self.ip, self.port))
+                #time.sleep(0.1)
         sock.close()
     
     # Function to receive audio from the other participant

@@ -108,11 +108,11 @@ def create_conversations(user: User):
     
 def receive_frames_and_update_tkinter(root: Tk, client: CallClient):
     while True:
-        frame = client.receive_frames()
-        img = Image.fromarray(frame)
+        filename = client.receive_frames()
+        img = Image.open(filename)
+        img = img.transpose(Image.FLIP_LEFT_RIGHT)
         imgtk= ImageTk.PhotoImage(image=img)
-        lable=Label(root)
-        lable.imgtk = imgtk
+        lable = Label(root)
         lable.configure(image=imgtk)
         decode_image(img, client)
         root.update()
