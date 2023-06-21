@@ -12,7 +12,8 @@ def wait_for_server_to_create_a_call(ip: str,interviewee_name: str):
     print(answer)
     if answer is True:
         sock.accept_conversation()
-        converstion_page_design(ip,interviewee_name)
+        ip_interviewer=manager["IP_INTERVIEWER"]
+        converstion_page_design(ip_interviewer,interviewee_name)
     else:
         sock.reject_conversation()
     return

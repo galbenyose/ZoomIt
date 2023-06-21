@@ -6,7 +6,7 @@ import interviewee_page
 from clients import *
 
 
-client = User('192.168.68.74', 1337)
+client = User('192.168.101.131', 1337)
 
 
 def home_page_design():

@@ -56,7 +56,7 @@ class Client:
     
 
 class CallClient(Client):
-    # Constants for audio streaming
+    #  Constants for audio streaming
     global CHUNK_SIZE 
     CHUNK_SIZE = 65527 
     global FORMAT
@@ -66,7 +66,6 @@ class CallClient(Client):
     global RATE
     RATE = 44100
     PORT = 12345
-    
     
     THOUCHINGTHENOSE="5.1"
     THOUCHINGTHEMOUTH="5.2"
