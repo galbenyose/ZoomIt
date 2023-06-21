@@ -2,6 +2,7 @@ import pyaudio
 import base64
 from PIL import Image, ImageTk
 import socket
+import imutils
 import time
 import cv2
 import numpy as np
@@ -123,12 +124,13 @@ class CallClient(Client):
         sock.close()
         
     def send_frames(self):
+        print(self.ip, self.port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         #משנה את הגודל המקסימלי שאפשר לשלוח בפרוטוקול
         sock.setsockopt(socket.SOL_SOCKET,socket.SO_SNDBUF, 921600)
         while True:
             ret, video_frame = self.CAP.read()
-            video_frame=cv2.resize(video_frame,(640,480))
+            video_frame = imutils.resize(video_frame, width=512)
             if not ret:
                break
             data: bytes = video_frame.tobytes()
@@ -149,6 +151,7 @@ class CallClient(Client):
         
     # Function to send audio to the other participant
     def send_audio(self):  
+        print(self.ip, self.port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         addr = (self.ip, self.port + 1)
         while True:

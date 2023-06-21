@@ -100,33 +100,34 @@ class Server:
             parameters[key] = value
         return parameters
 
-    def creatconversation(self,client: socket.socket,data,addr):
-        username_interviewee=data["USERNAME"]
+    def creatconversation(self,client: socket.socket, data ,addr):
+        username_interviewee = data["USERNAME"]
         email = data['EMAIL']
         db=ZoomItDB()
         ip_interviewee=db.get_user_ip("users_u",username_interviewee)
         user = db.get_user_by_email(email)
         #בקשה ליצירת שיחה
         with socket.create_connection((ip_interviewee, self.CONVERSATION_PORT)) as sock:
-            call_request= self.create_message(self.CALL_ENTRY_CONFIRMATION, {
-                'FIRST_NAME': user['name_u']
+            call_request = self.create_message(self.CALL_ENTRY_CONFIRMATION, {
+                'FIRST_NAME': user['name_u'],
+                'IP': addr
             })
             sock.send(call_request)
             data = self.get_all_data(sock)
-            parameters = self.extract_parameters(data)
-            # מחזיר true
-            if parameters['RESULT'] == TRUE:
-                message = self.create_message(self.CALL_ENTRY_CONFIRMATION, {
-                    'RESULT': TRUE,
-                    'IP': ip_interviewee,
-                    'PORT': str(self.CONVERSATION_PORT)
-                })
-            else:
-                message = self.create_message(self.DENYING_ENTRY_TO_CALL, {
-                    'RESULT': FALSE,
-                })
-            encrypted_message=self._prepare_message(message,addr)
-            client.send(encrypted_message)
+        parameters = self.extract_parameters(data)
+        # מחזיר true
+        if parameters['RESULT'] == TRUE:
+            message = self.create_message(self.CALL_ENTRY_CONFIRMATION, {
+                'RESULT': TRUE,
+                'IP': ip_interviewee,
+                'PORT': str(self.CONVERSATION_PORT)
+            })
+        else:
+            message = self.create_message(self.DENYING_ENTRY_TO_CALL, {
+                'RESULT': FALSE,
+            })
+        encrypted_message=self._prepare_message(message,addr)
+        client.send(encrypted_message)
 
     def change_password(self,client: socket.socket,data, addr):
         db=ZoomItDB()
@@ -283,6 +284,7 @@ class Server:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind(('0.0.0.0', self.port))
         server.listen()
+        print("server is up")
         threads = []
         while True:
             client, addr = server.accept()
