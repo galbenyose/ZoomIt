@@ -6,7 +6,7 @@ import interviewee_page
 from clients import *
 
 
-client = User('192.168.101.131', 1337)
+client = User('10.92.13.182', 1337)
 
 
 def home_page_design():
@@ -17,7 +17,7 @@ def home_page_design():
     root.title("ZOOM IT")
     root.configure(bg="#F4F6F7")
     root.geometry("500x500")
-    site_name=Label(root, text="ZOOM IT",fg="black",bg="#F4F6F7",font=("verdana",50)).place(x=600,y=30)
+    site_name=Label(root, text="ZOOM 10.92.13.182IT",fg="black",bg="#F4F6F7",font=("verdana",50)).place(x=600,y=30)
     label1= Label(root, text="Hellow Walcom To Zoom It!!",fg="black",bg="#F4F6F7",font=("verdana",20)).place(x=500,y=120)
     information_b=Button(root, text= "information about us",command= information_button,font=("verdana",25))
     information_b.place(x=1100,y=500)

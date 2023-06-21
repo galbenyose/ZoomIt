@@ -6,6 +6,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 cap = cv2.VideoCapture(0)
 
+print('asdasd' + str(cap))
 
 while True:
     ret, data = cap.read()
@@ -13,5 +14,5 @@ while True:
     filename = 'temp.jpg'
     cv2.imwrite(filename, data)
     with open(filename, 'rb') as f:
-        sock.sendto(f.read(), ('192.168.68.74', 1337))
+        sock.sendto(f.read(), ('10.92.13.182', 1337))
     time.sleep(0.1)

@@ -20,11 +20,11 @@ def wait_for_server_to_create_a_call(ip: str,interviewee_name: str):
 
 def receive_frames_and_update_tkinter(root: Tk, client: CallClient):
     while True:
-        frame = client.receive_frames()
-        img = Image.fromarray(frame)
+        filename = client.receive_frames()
+        img = Image.open(filename)
+        img = img.transpose(Image.FLIP_LEFT_RIGHT)
         imgtk= ImageTk.PhotoImage(image=img)
         lable=Label(root)
-        lable.imgtk = imgtk
         lable.configure(image=imgtk)
         root.update()
 

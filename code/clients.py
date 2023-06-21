@@ -45,7 +45,7 @@ class Client:
         return parameters
 
         
-    def send_and_recv(self, message: str) -> dict[str, str]:
+    def send_and_recv(self, message: bytes) -> dict[str, str]:
         # encryted = encrypt(message)
         with socket.create_connection((self.ip, self.port)) as sock:
             sock.send(message)
@@ -58,7 +58,7 @@ class Client:
 class CallClient(Client):
     #  Constants for audio streaming
     global CHUNK_SIZE 
-    CHUNK_SIZE = 65527 
+    CHUNK_SIZE = 2048 
     global FORMAT
     FORMAT = pyaudio.paInt16
     global CHANNELS 
@@ -81,7 +81,6 @@ class CallClient(Client):
         # Initialize audio stream
         audio_stream = pyaudio.PyAudio()
         self.audio_stream_output = audio_stream.open(
-            
             format=FORMAT,
             channels=CHANNELS,
             rate=RATE,
@@ -89,11 +88,11 @@ class CallClient(Client):
             output=True
         )
         self.audio_stream_input = audio_stream.open(
-        format=FORMAT,
-        channels=CHANNELS,
-        rate=RATE,
-        frames_per_buffer=CHUNK_SIZE,
-        input=True
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            frames_per_buffer=CHUNK_SIZE,
+            input=True
         )
     
     # Function to receive frames from the other participant
@@ -101,15 +100,14 @@ class CallClient(Client):
     def receive_frames(self):
         global video_frame
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF, 921600)
         sock.bind(("0.0.0.0", self.port))
         data = b''
-        while len(data) < 921600:  # Adjust this value based on your frame size
-            packet, _ = sock.recvfrom(CHUNK_SIZE)
+        while len(data) < 230400:  # Adjust this value based on your frame size
+            packet, _ = sock.recvfrom(65535 * 8)
             if not packet:
                 break
             data += packet
-        filename = 'temp.jpg'
+        filename = 'recvtemp.jpg'
         with open(filename, 'wb') as f:
             f.write(data)
         sock.close()
@@ -123,18 +121,14 @@ class CallClient(Client):
         #משנה את הגודל המקסימלי שאפשר לשלוח בפרוטוקול
         while True:
             ret, video_frame = self.CAP.read()
-            video_frame = cv2.resize(video_frame, width=512)
+            video_frame = cv2.resize(video_frame, (320, 240))
             if not ret:
                break
-            filename = 'temp.jpg'
+            filename = 'sendtemp.jpg'
             cv2.imwrite(filename, video_frame)
-            with open(filename, video_frame) as f:
+            with open(filename, 'rb') as f:
                 sock.sendto(f.read(), (self.ip,1337))
-                time.sleep(0.1)
-            #data: bytes = video_frame.tobytes()
-            #for i in range(0, len(data), CHUNK_SIZE):
-                #sock.sendto(data[i:i+CHUNK_SIZE], (self.ip, self.port))
-                #time.sleep(0.1)
+                time.sleep(0.04)
         sock.close()
     
     # Function to receive audio from the other participant
@@ -160,7 +154,7 @@ class CallClient(Client):
     def Face_decoding(self,image):
         face=Face(image)
         if face.Thouching_the_ear()==True:
-            message=self.create_message(self.THOUCHINGTHEEAR)
+            message=self.create_message(self.THOUCHINGTHEEAR, )
             response_from_the_server = self.send_and_recv(message)
             return self.THOUCHINGTHEEAR
         

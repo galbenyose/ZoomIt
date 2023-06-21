@@ -112,7 +112,7 @@ class Server:
             call_request = self.create_message(self.CALL_ENTRY_CONFIRMATION, {
                 'FIRST_NAME': user['name_u'],
                 'IP': addr,
-                "IP_INTERVIERE": interviewer_ip
+                "IP_INTERVIEWER": interviewer_ip
             })
             sock.send(call_request)
             data = self.get_all_data(sock)
